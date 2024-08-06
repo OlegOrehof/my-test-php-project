@@ -4,7 +4,7 @@ env:
   variables:
     AWS_DEFAULT_REGION: "us-east-2"
     AWS_ACCOUNT_ID    : "112298774548"
-    ECR_REPO_NAME     : "mytest"
+    ECR_REPO_NAME     : "my-test-php"
     ECR_IMAGE_TAG     : "latest"
 
 phases:
@@ -20,21 +20,18 @@ phases:
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION| docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
         # aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 112298774548.dkr.ecr.us-east-2.amazonaws.com
 
-      - COMMIT_ID=$(git rev-parse --short HEAD)
-
   build:
     commands:
       - echo Building the Docker image...
+      - docker images
       - docker build -t $ECR_REPO_NAME:$ECR_IMAGE_TAG .
-        # docker build -t mytest .
+        # docker build -t my-test-php .
 
       - docker tag $ECR_REPO_NAME:$ECR_IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME:$ECR_IMAGE_TAG
-      - docker tag $ECR_REPO_NAME:$ECR_IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME:$COMMIT_ID
         # docker tag mytest:latest 112298774548.dkr.ecr.us-east-2.amazonaws.com/mytest:latest
 
   post_build:
     commands:
       - echo Pushing the Docker image...
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME:$ECR_IMAGE_TAG
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME:$COMMIT_ID
         # docker push 112298774548.dkr.ecr.us-east-2.amazonaws.com/mytest:latest

@@ -4,38 +4,39 @@ env:
   variables:
     AWS_DEFAULT_REGION: "us-east-2"
     AWS_ACCOUNT_ID    : "112298774548"
-    ECR_REPO_NAME     : "my-test-php"
+    ECR_REPO_NAME     : "my-test-php-project"
     ECR_IMAGE_TAG     : "latest"
 
 phases:
   install:
     commands:
-      - echo "Check aws and git version"
+      - echo "Check AWS version"
       - aws --version
-      - git --version
 
   pre_build:
     commands:
-      - echo "Login to AWS ECR and get commit id"
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION| docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
         # aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 112298774548.dkr.ecr.us-east-2.amazonaws.com
-
-      - COMMIT_ID=$(git rev-parse --short HEAD)
 
   build:
     commands:
+      - printf '[{"name":"MyNginxContainer","imageUri":"112298774548.dkr.ecr.us-east-2.amazonaws.com/my_test_nginx:latest"}]' > imagedefinitions.json
+
       - echo Building the Docker image...
-      - docker images
       - docker build -t $ECR_REPO_NAME:$ECR_IMAGE_TAG .
-        # docker build -t my-test-php .
+        # docker build -t my-test-php-project .
 
       - docker tag $ECR_REPO_NAME:$ECR_IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME:$ECR_IMAGE_TAG
-      - docker tag $ECR_REPO_NAME:$ECR_IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME:$COMMIT_ID
-        # docker tag mytest:latest 112298774548.dkr.ecr.us-east-2.amazonaws.com/mytest:latest
+        # docker tag my_test_nginx:latest 112298774548.dkr.ecr.us-east-2.amazonaws.com/my_test_nginx:latest
 
   post_build:
     commands:
       - echo Pushing the Docker image...
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME:$ECR_IMAGE_TAG
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME:$COMMIT_ID
-        # docker push 112298774548.dkr.ecr.us-east-2.amazonaws.com/mytest:latest
+        # docker push 112298774548.dkr.ecr.us-east-2.amazonaws.com/my-test-php-project:latest
+
+artifacts:
+  files:
+    - imagedefinitions.json
+      # artifacts

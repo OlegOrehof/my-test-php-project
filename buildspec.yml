@@ -21,7 +21,7 @@ phases:
 
   build:
     commands:
-      - printf '[{"name":"MyNginxContainer","imageUri":"112298774548.dkr.ecr.us-east-2.amazonaws.com/my_test_nginx:latest"}]' > imagedefinitions.json
+      - printf '[{"name":"MyPHPContainer","imageUri":"112298774548.dkr.ecr.us-east-2.amazonaws.com/my-test-php-project:latest"}]' > imagedefinitions.json
 
       - echo Building the Docker image...
       - docker build -t $ECR_REPO_NAME:$ECR_IMAGE_TAG .

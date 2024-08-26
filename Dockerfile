@@ -65,3 +65,18 @@ RUN echo "error_log = \"/var/log/error.log\"" >> ${CUSTOM_INI}
 RUN echo "error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE" >> ${CUSTOM_INI}
 RUN echo "display_errors = On" >> ${CUSTOM_INI}
 RUN echo "display_startup_errors = On" >> ${CUSTOM_INI}
+
+RUN chown -R www-data:www-data /var/www/html
+
+# Устанавливаем Nginx
+RUN apk add --no-cache nginx
+
+# Копируем файл конфигурации Nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY default.conf /etc/nginx/conf.d/default.conf
+
+# Открываем порты
+EXPOSE 80
+
+# Запускаем Nginx и PHP-FPM
+CMD ["sh", "-c", "nginx -g 'daemon off;' & php-fpm"]

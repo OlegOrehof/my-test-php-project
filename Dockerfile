@@ -66,17 +66,22 @@ RUN echo "error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE" >> ${
 RUN echo "display_errors = On" >> ${CUSTOM_INI}
 RUN echo "display_startup_errors = On" >> ${CUSTOM_INI}
 
-RUN chown -R www-data:www-data /var/www/html
+# Set workdir
+WORKDIR /var/www/html
 
-# Устанавливаем Nginx
+# Copy the source code to the container's /var/www/html directory
+COPY ./src /var/www/html
+
+# Use the Nginx latest image as the web server
+# FROM nginx:latest
 RUN apk add --no-cache nginx
 
-# Копируем файл конфигурации Nginx
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY default.conf /etc/nginx/conf.d/default.conf
+# Copy the Nginx configuration file to the container's /etc/nginx/conf.d directory
+COPY ./docker/nginx /etc/nginx
+COPY ./docker/nginx/conf.d /etc/nginx/conf.d
 
-# Открываем порты
+# Expose port 80 for HTTP traffic
 EXPOSE 80
 
-# Запускаем Nginx и PHP-FPM
-CMD ["sh", "-c", "nginx -g 'daemon off;' & php-fpm"]
+# Start both PHP-FPM and Nginx processes
+CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
